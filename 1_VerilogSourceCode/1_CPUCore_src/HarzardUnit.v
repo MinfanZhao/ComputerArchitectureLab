@@ -13,11 +13,101 @@ module HarzardUnit(
     input wire CpuRst, ICacheMiss, DCacheMiss, 
     input wire BranchE, JalrE, JalD, 
     input wire [4:0] Rs1D, Rs2D, Rs1E, Rs2E, RdE, RdM, RdW,
-    input wire [1:0] RegReadE,
-    input wire [2:0] MemToRegE, RegWriteM, RegWriteW,
+    input wire [1:0] RegReadE,RegReadD,
+    input wire [2:0]  RegWriteM, RegWriteW,
+    input wire MemToRegE,
     output reg StallF, FlushF, StallD, FlushD, StallE, FlushE, StallM, FlushM, StallW, FlushW,
     output reg [1:0] Forward1E, Forward2E
     );
+    
+    always@(*)
+    begin
+        if(CpuRst)
+            begin
+                StallF<=0;
+                FlushF<=1;
+                StallD<=0;
+                FlushD<=1;
+                StallE<=0;
+                FlushE<=1;
+                StallM<=0;
+                FlushM<=1;
+                StallW<=0;
+                FlushW<=1;
+                Forward1E<=2'b00;
+                Forward2E<=2'b00;
+            end
+        else begin
+        //FORWARD: nearest instruction forward priority.reg[0] don't forward
+            if(RdM==Rs1E && RegReadE[1]==1'B1 && RdM!=0 && RegWriteM!=3'b000)
+                Forward1E<=2'B10;
+            else if(RdW==Rs1E && RegReadE[1]==1'B1 && RegWriteW!=3'b000 && RdW!=0)
+                Forward1E<=2'B01;
+            else 
+                Forward1E<=2'B00;
+            if(RdM==Rs2E && RegReadE[0]==1'B1 && RdM!=0 && RegWriteM!=3'b000) 
+                Forward2E<=2'b10;
+            else if(RdW==Rs2E && RegReadE[0]==1'B1 && RegWriteW!=3'b000 && RdW!=0)
+                Forward2E<=2'B01;
+            else 
+                Forward2E<=2'B00;
+             //bubble   
+            if (MemToRegE==1 && ((RdE==Rs1D && RegReadD[1]==1'B1 && RdE!=0)||(RdE==Rs2D && RegReadD[0]==1'B1 && RdE!=0)))
+            begin
+                StallF<=1;
+                FlushF<=0;
+                StallD<=1;
+                FlushD<=0;
+                StallE<=0;
+                FlushE<=1;
+                StallM<=0;
+                FlushM<=0;
+                StallW<=0;
+                FlushW<=0;
+            end
+
+        //branch
+            else if(BranchE || JalrE)
+            begin
+                StallF<=0;
+                FlushF<=0;
+                StallD<=0;
+                FlushD<=1;
+                StallE<=0;
+                FlushE<=1;
+                StallM<=0;
+                FlushM<=0;
+                StallW<=0;
+                FlushW<=0;
+            end
+            else if(JalD)
+            begin
+                StallF<=0;
+                FlushF<=0;
+                StallD<=0;
+                FlushD<=1;
+                StallE<=0;
+                FlushE<=0;
+                StallM<=0;
+                FlushM<=0;
+                StallW<=0;
+                FlushW<=0;
+            end
+            else begin
+                StallF<=0;
+                FlushF<=0;
+                StallD<=0;
+                FlushD<=0;
+                StallE<=0;
+                FlushE<=0;
+                StallM<=0;
+                FlushM<=0;
+                StallW<=0;
+                FlushW<=0;
+            end   
+        end
+    end
+
     //Stall and Flush signals generate
 
     //Forward Register Source 1

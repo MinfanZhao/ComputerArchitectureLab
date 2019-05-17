@@ -53,13 +53,21 @@ module WBSegReg(
             ResultW           <= clear ?     0 : ResultM;
             RdW               <= clear ?  5'b0 : RdM;
         end
-
+    reg [4:0]mov;
+    always@(*)
+        case(A[1:0])
+            2'b00: mov<=5'd0;
+            2'b01: mov<=5'd8;
+            2'b10: mov<=5'd16;
+            2'b11: mov<=5'd24;
+            default:mov<=0;
+        endcase
     wire [31:0] RD_raw;
     DataRam DataRamInst (
-        .clk    (???),                      //请补全
-        .wea    (???),                      //请补全
-        .addra  (???),                      //请补全
-        .dina   (???),                      //请补全
+        .clk    (clk),                      //请补全
+        .wea    (WE<<A[1:0]),                      //请补全
+        .addra  (A[31:2]),                      //请补全
+        .dina   (WD<<mov),                      //请补全
         .douta  ( RD_raw         ),
         .web    ( WE2            ),
         .addrb  ( A2[31:2]       ),

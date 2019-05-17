@@ -13,10 +13,15 @@
 // !!! ALL YOU NEED TO CHANGE IS 4 FILE PATH BELOW !!!	
 //				(they are all optional, you can run cpu without change paths here,if files are failed to open, we will not dump the content to .txt and will not try to initial your bram)
 //////////////////////////////////////////////////////////////////////////////////
-`define DataRamContentLoadPath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\1testAll.data"
-`define InstRamContentLoadPath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\1testAll.inst"
-`define DataRamContentSavePath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\DataRamContent.txt"
-`define InstRamContentSavePath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\InstRamContent.txt"
+//`define DataRamContentLoadPath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\1testAll.data"
+//`define InstRamContentLoadPath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\1testAll.inst"
+//`define DataRamContentSavePath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\DataRamContent.txt"
+//`define InstRamContentSavePath "F:\\VivadoWorkspace\\RISCV-CPU\\RISCV-CPU.srcs\\sources_1\\new\\SimFiles\\InstRamContent.txt"
+`define DataRamContentSavePath "C:/Users/19079/Desktop/arc_test/DataRamContent.txt"
+`define InstRamContentSavePath "C:/Users/19079/Desktop/arc_test/InstRamContent.txt"
+`define DataRamContentLoadPath "C:/Users/19079/Desktop/arc_test/3testAll.data"
+`define InstRamContentLoadPath "C:/Users/19079/Desktop/arc_test/3testAll.inst"
+
 `define BRAMWORDS 4096  //a word is 32bit, so our bram is 4096*32bit
 
 module testBench(
@@ -123,11 +128,11 @@ module testBench(
         CPU_RST = 1'b1;
         #10;   
         CPU_RST = 1'b0;
-        #400000 												// waiting for instruction Execution to End
+        #400000                                                 // waiting for instruction Execution to End
         $display("Finish Instruction Execution!"); 
         
         $display("Saving DataRam Content to file..."); 
-        CPU_Debug_DataRAM_A2 = 32'b0;
+        CPU_Debug_DataRAM_A2 = 32'hfffffffc;
         #10
         SaveDataRamFile = $fopen(`DataRamContentSavePath,"w");
         if(SaveDataRamFile==0)
@@ -139,8 +144,10 @@ module testBench(
             for(i=0;i<`BRAMWORDS;i=i+1)
                 begin
                 @(posedge CPU_CLK);
-                $fwrite(SaveDataRamFile,"%4d\t%8h\t%4d\t%8h\t%4d\n",i,CPU_Debug_DataRAM_A2,CPU_Debug_DataRAM_A2,CPU_Debug_DataRAM_RD2,CPU_Debug_DataRAM_RD2);
                 CPU_Debug_DataRAM_A2 = CPU_Debug_DataRAM_A2+4;
+                @(posedge CPU_CLK);
+                @(negedge CPU_CLK);
+                $fwrite(SaveDataRamFile,"%4d\t%8h\t%4d\t%8h\t%4d\n",i,CPU_Debug_DataRAM_A2,CPU_Debug_DataRAM_A2,CPU_Debug_DataRAM_RD2,CPU_Debug_DataRAM_RD2);
                 end
             $fclose(SaveDataRamFile);
         end
@@ -151,15 +158,17 @@ module testBench(
             $display("Failed to Open %s, Do Not Save InstRam values to file!",`InstRamContentSavePath);
         else
         begin
-            CPU_Debug_InstRAM_A2 = 32'b0;
+            CPU_Debug_InstRAM_A2 = 32'hfffffffc;
             #10
             $fwrite(SaveInstRamFile,"i\tAddr\tAddr\tData\tData\n");
             #10
             for(i=0;i<`BRAMWORDS;i=i+1)
                 begin
                 @(posedge CPU_CLK);
-                $fwrite(SaveInstRamFile,"%4d\t%8h\t%4d\t%8h\t%4d\n",i,CPU_Debug_InstRAM_A2,CPU_Debug_InstRAM_A2,CPU_Debug_InstRAM_RD2,CPU_Debug_InstRAM_RD2);
                 CPU_Debug_InstRAM_A2 = CPU_Debug_InstRAM_A2+4;
+                @(posedge CPU_CLK);
+                @(negedge CPU_CLK);
+                $fwrite(SaveInstRamFile,"%4d\t%8h\t%4d\t%8h\t%4d\n",i,CPU_Debug_InstRAM_A2,CPU_Debug_InstRAM_A2,CPU_Debug_InstRAM_RD2,CPU_Debug_InstRAM_RD2);
                 end
             $fclose(SaveInstRamFile);      
         end      

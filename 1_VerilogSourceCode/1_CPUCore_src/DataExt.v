@@ -16,7 +16,54 @@ module DataExt(
     input wire [1:0] LoadedBytesSelect,
     input wire [2:0] RegWriteW,
     output reg [31:0] OUT
-    );    
+    );  
+
+    always @(*) begin
+        case(LoadedBytesSelect)
+            2'B00:begin
+                case(RegWriteW)
+                    `LB:OUT<={{24{IN[7]}},IN[7:0]};
+                    `LH:OUT<={{16{IN[15]}},IN[15:0]};
+                    `LW:OUT<=IN[31:0];
+                    `LBU:OUT<={24'B0,IN[7:0]};
+                    `LHU:OUT<={16'B0,IN[15:0]};
+                    default:OUT<=32'hxxxxxxxx;
+                endcase
+            end
+            2'B01:begin
+                case(RegWriteW)
+                    `LB:OUT<={{24{IN[15]}},IN[15:8]};
+                    `LH:OUT<={{16{IN[23]}},IN[23:8]};
+                    //`LW:OUT<=IN[31:0];
+                    `LBU:OUT<={24'B0,IN[15:8]};
+                    `LHU:OUT<={16'B0,IN[23:8]};
+                    default:OUT<=32'hxxxxxxxx;
+                endcase
+            end
+            2'B10:begin
+                case(RegWriteW)
+                    `LB:OUT<={{24{IN[23]}},IN[23:16]};
+                    `LH:OUT<={{16{IN[31]}},IN[31:16]};
+                    //`LW:OUT<=IN[31:0];
+                    `LBU:OUT<={24'B0,IN[23:16]};
+                    `LHU:OUT<={16'B0,IN[31:16]};
+                    default:OUT<=32'hxxxxxxxx;
+                endcase
+            end
+            2'B11:begin
+                case(RegWriteW)
+                    `LB:OUT<={{24{IN[31]}},IN[31:24]};
+                    //`LH:OUT<={{16{IN[23]}},IN[23:8]};
+                    //`LW:OUT<=IN[31:0];
+                    `LBU:OUT<={24'B0,IN[31:24]};
+                    //`LHU:OUT<={16'B0,IN[23:8]};
+                    default:OUT<=32'hxxxxxxxx;
+                endcase
+            end
+            default:OUT<=32'hxxxxxxxx;
+        endcase
+    end
+
 endmodule
 
 //功能说明

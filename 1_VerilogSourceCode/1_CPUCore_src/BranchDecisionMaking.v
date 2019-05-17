@@ -15,6 +15,45 @@ module BranchDecisionMaking(
     input wire [31:0] Operand1,Operand2,
     output reg BranchE
     );
+wire signed [31:0]a;
+wire signed [31:0]b;
+assign a = Operand1;
+assign b = Operand2;
+always @(*) begin
+    case(BranchTypeE)
+        `BEQ:if(Operand1==Operand2)
+                BranchE<=1;
+            else 
+                BranchE<=0;
+        `BNE:if(Operand1!=Operand2)
+                BranchE<=1;
+            else 
+                BranchE<=0;
+        `BLT:if(a<b) 
+                BranchE<=1;
+            else begin
+                BranchE<=0;
+            end
+        `BLTU:if(Operand1<Operand2)
+                BranchE<=1;
+            else begin
+                BranchE<=0;
+            end
+        `BGE:if(a>=b) 
+                BranchE<=1;
+            else begin
+                BranchE<=0;
+            end
+        `BGEU:if(Operand1>=Operand2)
+                BranchE<=1;
+            else begin
+                BranchE<=0;
+            end
+        default:BranchE<=0;
+    endcase
+end
+
+
 endmodule
 
 //功能和接口说明

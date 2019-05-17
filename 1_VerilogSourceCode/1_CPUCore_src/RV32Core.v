@@ -297,6 +297,7 @@ module RV32Core(
         .Rs1E(Rs1E),
         .Rs2E(Rs2E),
         .RegReadE(RegReadE),
+        .RegReadD(RegReadD),
         .MemToRegE(MemToRegE),
         .RdE(RdE),
         .RdM(RdM),
